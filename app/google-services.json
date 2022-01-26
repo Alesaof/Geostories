@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "304401830879",
+    "project_id": "geostories-9ae6f",
+    "storage_bucket": "geostories-9ae6f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304401830879:android:a2f97c12bb31b4dd97aa6a",
+        "android_client_info": {
+          "package_name": "com.example.geostories"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304401830879-3pd83q470589tj2t7h57js6edk5lhstp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBubSADDmqP3fTfTH_Z8HXQ18C6Fg8G4KM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304401830879-3pd83q470589tj2t7h57js6edk5lhstp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
