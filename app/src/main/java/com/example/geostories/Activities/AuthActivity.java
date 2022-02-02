@@ -26,6 +26,7 @@ public class AuthActivity extends AppCompatActivity {
     private Button loginButton;
     private String userEmailAuth;
     private String userPasswordAuth;
+    private Bundle bundle;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -70,7 +71,7 @@ public class AuthActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
-                    openHomeActivity();
+                    openHomeActivity(userEmailAuth);
                 }else{
                     Toast.makeText(AuthActivity.this, "No se ha podido Iniciar Sesión", Toast.LENGTH_SHORT).show();
                 }
@@ -79,8 +80,9 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     //Other Activities Open
-    private void openHomeActivity() {
+    private void openHomeActivity(String actualUser) {
         Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("actualUser", actualUser);
         startActivity(intent);
     }
 
