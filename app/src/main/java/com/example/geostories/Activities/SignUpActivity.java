@@ -67,7 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void signUpUser() {
-        Log.d("Geostories","username: " + userName );
+        Log.d("Geostories","username: " + userName);
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {

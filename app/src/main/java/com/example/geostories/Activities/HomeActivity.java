@@ -102,6 +102,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), MapsActivity.class);
+                intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
                 startActivity(intent);
             }
         });

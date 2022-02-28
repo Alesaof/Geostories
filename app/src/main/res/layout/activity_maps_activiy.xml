@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.MapsActivity">
-    <include android:id="@+id/toolbar_map"
+
+    <include
+        android:id="@+id/toolbar_map"
         layout="@layout/toolbar_layout"></include>
 
     <LinearLayout
@@ -13,11 +15,26 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <fragment
-            class="com.google.android.gms.maps.SupportMapFragment"
             android:id="@+id/map"
+            class="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="600dp" />
+
+        <Button
+            android:id="@+id/uploadStorieMapActivity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="casual"
+            android:lineSpacingExtra="0dp"
+            android:text="Subir historia"
+            android:textAlignment="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:translationX="150dp"
+            android:translationZ="0dp" />
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

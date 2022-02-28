@@ -7,11 +7,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 
 import com.example.geostories.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,6 +31,7 @@ import com.google.android.gms.tasks.Task;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private Button uploadStorieButton;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastKnownLocation;
 
@@ -63,6 +67,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
     /**
@@ -88,6 +94,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
 
+        uploadStorieButton = findViewById(R.id.uploadStorieMapActivity);
+        uploadStorieButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), UploadStorieActivity.class);
+                intent.putExtra("latitude", "" + lastKnownLocation.getLatitude());
+                intent.putExtra("longitude", "" + lastKnownLocation.getLongitude());
+                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                startActivity(intent);
+            }
+        });
 
         /*
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
