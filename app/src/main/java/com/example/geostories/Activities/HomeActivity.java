@@ -1,6 +1,7 @@
 package com.example.geostories.Activities;
 
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -9,17 +10,24 @@ import androidx.appcompat.widget.Toolbar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.example.geostories.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,8 +37,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
+import org.w3c.dom.Text;
+
+import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -45,6 +59,7 @@ public class HomeActivity extends AppCompatActivity {
     private TextView homeProfileViewsText;
     private TextView homeViewsDoneText;
     private ImageView profilePic;
+    private LinearLayout firstLinearLayout;
 
     //Usuario actual
     private String userName;
@@ -97,6 +112,18 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+        firstLinearLayout = findViewById(R.id.firstLinearLayout);
+        db.collection("stories").whereEqualTo("userOwner", getIntent().getExtras().getString("actualUser"))
+        .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            storieSectionInfo(task.getResult());
+                        } else {
+                            Log.d("GeoStories", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
         homeMapButton = findViewById(R.id.homeMapButton);
         homeMapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +133,41 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void storieSectionInfo(QuerySnapshot result) {
+        for (QueryDocumentSnapshot document : result) {
+            LinearLayout secondLinearLayout = new LinearLayout(this);
+            secondLinearLayout.setOrientation(0);
+
+            /*VideoView video = new VideoView(this);
+            video.setVideoURI(Uri.parse("http://videocdn.bodybuilding.com/video/mp4/62000/62792m.mp4"));
+            video.setMediaController(new MediaController(this));
+            video.requestFocus();
+            video.start();
+            secondLinearLayout.addView(video);*/
+
+            TextView storieTittle = new TextView(this);
+            storieTittle.setText(" ➩" + (String)document.get("storieTittle"));
+            storieTittle.setTextColor((Color.parseColor("#FF0B4F6C")));
+            storieTittle.setTypeface(null, Typeface.BOLD);
+            storieTittle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(v.getContext(), ViewStorie.class);
+                    intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+                    intent.putExtra("ActualStorie", document.getId());
+                    startActivity(intent);
+                }
+            });
+            secondLinearLayout.addView(storieTittle);
+
+            TextView storieDescription = new TextView(this);
+            storieDescription.setText("      " + (String)document.get("storieDescription"));
+            storieDescription.setTypeface(null, Typeface.BOLD);
+            secondLinearLayout.addView(storieDescription);
+            firstLinearLayout.addView(secondLinearLayout);
+        }
     }
 
     private void putInfo(FirebaseFirestore db, DocumentSnapshot value) {

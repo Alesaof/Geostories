@@ -17,9 +17,13 @@
         android:roundIcon="@mipmap/ic_dailos"
         android:supportsRtl="true">
         <activity
+            android:name=".Activities.ViewStorie"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
             android:name=".Activities.UploadStorieActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".Activities.MapsActivity"
             android:exported="false"
