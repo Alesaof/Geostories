@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.example.geostories.R;
 import com.google.firebase.firestore.DocumentReference;
@@ -23,6 +24,7 @@ public class ViewStorie extends AppCompatActivity {
     private TextView tittle;
     private TextView description;
     private TextView views;
+    private VideoView video;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,9 @@ public class ViewStorie extends AppCompatActivity {
         views = findViewById(R.id.textViewVisitsViewStorie);
         long storieViewsCast = Math.round(value.getDouble("storieViews"));
         views.setText("Visitas: "+ storieViewsCast);
+        video = findViewById(R.id.videoViewStorie);
+        video.setVideoPath(value.getString("videoUri"));
+        video.start();
     }
 
     private void showError() {

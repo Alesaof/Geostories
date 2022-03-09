@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import com.example.geostories.R;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -59,6 +60,7 @@ public class UploadStorieActivity extends AppCompatActivity {
     private String longitude;
     private UUID storieId;
     private boolean storieIdExist;
+    private String URLVideo = "";
 
 
     @Override
@@ -102,6 +104,52 @@ public class UploadStorieActivity extends AppCompatActivity {
                         StorageReference stoRef = storageRef.child("Stories/"+getIntent().getExtras().getString("ActualUser")+"/"+uriVideo.getLastPathSegment());
                         uploadTask = stoRef.putFile(uriVideo); //Guarda video en firebaseStorage
 
+                        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if (!task.isSuccessful()) {
+                                    throw task.getException();
+                                }
+                                // Continue with the task to get the download URL
+                                return stoRef.getDownloadUrl();
+                            }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if (task.isSuccessful()) {
+                                    Uri downloadUri = task.getResult();
+                                    URLVideo = downloadUri.toString();
+                                    Log.d("GeoStories", "URLVIDEO: " + URLVideo);
+                                    tittle = editTextTittleUploadStorie.getText().toString();
+                                    description = editTextDescriptionUploadStorie.getText().toString();
+                                    //Para guardar en firebase database
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("storieTittle", tittle);
+                                    map.put("storieDescription", description);
+                                    map.put("storieLatitude", latitude);
+                                    map.put("storieLongitude", longitude);
+                                    map.put("userOwner", getIntent().getExtras().getString("ActualUser"));
+                                    map.put("videoUri", URLVideo); //No se si esto luego se puede utilizar realmente para visualizar.
+                                    map.put("storieViews", 0);
+                                    //Comprobar si el id de la historia ya existe
+                                    storieId = UUID.randomUUID();
+                                    storieIdExists();
+                                    map.put("storieId", getIntent().getExtras().getString("ActualUser")+ "-" +storieId.toString());
+                                    db.collection("stories").document(map.get("storieId").toString()).set(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if(task.isSuccessful()){
+                                                backMap();
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    // Handle failures
+                                    // ...
+                                }
+                            }
+                        });
+
 
                         // Register observers to listen for when the download is done or if it fails
                         uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -117,7 +165,7 @@ public class UploadStorieActivity extends AppCompatActivity {
                                 // ...
                                 progressBar.setVisibility(View.INVISIBLE);
                                 Log.d("GeoStories", "VIDEO SUBIDO");
-                                tittle = editTextTittleUploadStorie.getText().toString();
+                                /*tittle = editTextTittleUploadStorie.getText().toString();
                                 description = editTextDescriptionUploadStorie.getText().toString();
                                 //Para guardar en firebase database
                                 Map<String, Object> map = new HashMap<>();
@@ -126,14 +174,12 @@ public class UploadStorieActivity extends AppCompatActivity {
                                 map.put("storieLatitude", latitude);
                                 map.put("storieLongitude", longitude);
                                 map.put("userOwner", getIntent().getExtras().getString("ActualUser"));
-                               // Uri downloadurl = taskSnapshot.(); AQUI PA LA URI
-                                map.put("videoUri", uriVideo.toString()); //No se si esto luego se puede utilizar realmente para visualizar.
+                                map.put("videoUri", URLVideo); //No se si esto luego se puede utilizar realmente para visualizar.
                                 map.put("storieViews", 0);
                                 //Comprobar si el id de la historia ya existe
                                 storieId = UUID.randomUUID();
                                 storieIdExists();
                                 map.put("storieId", getIntent().getExtras().getString("ActualUser")+ "-" +storieId.toString());
-                                //databaseReference.child(map.get("storieId").toString()).setValue(map);
                                 db.collection("stories").document(map.get("storieId").toString()).set(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
@@ -141,8 +187,7 @@ public class UploadStorieActivity extends AppCompatActivity {
                                             backMap();
                                         }
                                     }
-                                });
-
+                                });*/
                             }
                         });
                     }
