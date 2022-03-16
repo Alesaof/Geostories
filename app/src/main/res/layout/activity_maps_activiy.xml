@@ -20,7 +20,8 @@
             android:id="@+id/map"
             class="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="600dp" />
+            android:layout_height="600dp"
+            />
 
         <Button
             android:id="@+id/uploadStorieMapActivity"
@@ -35,6 +36,6 @@
             android:translationX="150dp"
             android:translationZ="0dp" />
 
-    </LinearLayout>
 
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

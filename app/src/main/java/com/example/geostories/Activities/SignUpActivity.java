@@ -76,6 +76,9 @@ public class SignUpActivity extends AppCompatActivity {
                     map.put("userName", userName);
                     map.put("userEmail", SignUpActivity.this.userEmail);
                     map.put("userPassword", SignUpActivity.this.userPassword);
+                    map.put("profileViews", 0);
+                    map.put("viewsDone", 0);
+                    map.put("profilePicUrl", "https://firebasestorage.googleapis.com/v0/b/geostories-9ae6f.appspot.com/o/examples%2Fimages%2Fprofile.jpg.png?alt=media&token=08366982-74f1-497a-a325-bb09050b2931");
                     db.collection("users").document(SignUpActivity.this.userEmail).set(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task2) {

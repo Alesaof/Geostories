@@ -3,10 +3,13 @@ package com.example.geostories.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentContainerView;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,6 +18,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.geostories.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -25,9 +31,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.example.geostories.Activities.Services.InfoWindow;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -47,6 +59,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+    //Firebase
+    private FirebaseFirestore db;
+    //Marcadores
+    Context context;
+    ImageButton imgButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +73,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toolbar myToolbar = findViewById(R.id.toolbar_map);
         setSupportActionBar(myToolbar);
         this.setTitle("Mapa");
+        context = this;
+
 
         // Retrieve location and camera position from saved instance state.
         if (savedInstanceState != null) {
@@ -103,6 +123,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 intent.putExtra("longitude", "" + lastKnownLocation.getLongitude());
                 intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
                 startActivity(intent);
+            }
+        });
+        //Poner marcadores en el mapa.
+        db = FirebaseFirestore.getInstance();
+        db.collection("stories").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()){
+                        double storieLatitude = Double.parseDouble(document.get("storieLatitude").toString());
+                        double storieLongitude = Double.parseDouble(document.get("storieLongitude").toString());
+                        Marker m = map.addMarker(new MarkerOptions()
+                                .position(new LatLng(storieLatitude, storieLongitude))
+                                .title(document.get("storieTittle").toString())
+                                .snippet(document.get("storieDescription").toString() + "\nVisitas: " + document.get("storieViews").toString()));
+                        m.setTag(document.getId());
+
+                        GoogleMap.InfoWindowAdapter infoWindow = new InfoWindow(context);
+                        map.setInfoWindowAdapter(infoWindow);
+                        map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                            @Override
+                            public void onInfoWindowClick(Marker m) {
+                                Log.d("GeoStories","Ha en el infoView para ver historia");
+                                Intent intent = new Intent(context, ViewStorie.class);
+                                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                                intent.putExtra("ActualStorie", m.getTag().toString());
+                                startActivity(intent);
+                            }
+                        });
+                        Log.d("GeoStories","Ha entrado en poner marcadores");
+                    }
+                }
             }
         });
 
