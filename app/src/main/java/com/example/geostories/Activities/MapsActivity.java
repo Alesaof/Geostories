@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.geostories.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,6 +30,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -36,6 +38,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -89,6 +92,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
 
+
     }
 
     /**
@@ -138,7 +142,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .position(new LatLng(storieLatitude, storieLongitude))
                                 .title(document.get("storieTittle").toString())
                                 .snippet(document.get("storieDescription").toString() + "\nVisitas: " + document.get("storieViews").toString()));
+                        if(lastKnownLocation.getLatitude() < (storieLatitude + 0.002) && lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                                && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                                lastKnownLocation.getLongitude() < (storieLongitude + 0.002)){
+                                    m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        }else{
+                            m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                        }
                         m.setTag(document.getId());
+
 
                         GoogleMap.InfoWindowAdapter infoWindow = new InfoWindow(context);
                         map.setInfoWindowAdapter(infoWindow);
@@ -149,7 +161,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 Intent intent = new Intent(context, ViewStorie.class);
                                 intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
                                 intent.putExtra("ActualStorie", m.getTag().toString());
-                                startActivity(intent);
+                                if(lastKnownLocation.getLatitude() < (m.getPosition().latitude + 0.002) && lastKnownLocation.getLatitude() > (m.getPosition().latitude - 0.002)
+                                        && lastKnownLocation.getLongitude() > (m.getPosition().longitude - 0.002) &&
+                                        lastKnownLocation.getLongitude() < (m.getPosition().longitude + 0.002)){
+                                    startActivity(intent);
+                                }else{
+                                    Snackbar.make(MapsActivity.this, findViewById(android.R.id.content),"Debe acercarse más", Snackbar.LENGTH_LONG).show();
+                                }
+
                             }
                         });
                         Log.d("GeoStories","Ha entrado en poner marcadores");
