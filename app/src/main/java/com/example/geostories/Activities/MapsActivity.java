@@ -138,10 +138,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     for (QueryDocumentSnapshot document : task.getResult()){
                         double storieLatitude = Double.parseDouble(document.get("storieLatitude").toString());
                         double storieLongitude = Double.parseDouble(document.get("storieLongitude").toString());
+                        long storieViewsCast = Math.round(document.getDouble("storieViews"));
                         Marker m = map.addMarker(new MarkerOptions()
                                 .position(new LatLng(storieLatitude, storieLongitude))
                                 .title(document.get("storieTittle").toString())
-                                .snippet(document.get("storieDescription").toString() + "\nVisitas: " + document.get("storieViews").toString()));
+                                .snippet(document.get("storieDescription").toString() + "\nVisitas: " + storieViewsCast));
                         if(lastKnownLocation.getLatitude() < (storieLatitude + 0.002) && lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
                                 && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
                                 lastKnownLocation.getLongitude() < (storieLongitude + 0.002)){

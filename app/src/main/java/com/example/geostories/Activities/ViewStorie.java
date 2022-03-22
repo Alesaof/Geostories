@@ -1,32 +1,45 @@
 package com.example.geostories.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.example.geostories.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Source;
 
 public class ViewStorie extends AppCompatActivity {
     private FirebaseFirestore db;
+    private boolean addDone = false;
 
     //Screen
+    private TextView storieOwner;
     private TextView tittle;
     private TextView description;
     private TextView views;
     private VideoView video;
+
+    private String creator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +57,11 @@ public class ViewStorie extends AppCompatActivity {
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 if(value.exists()){
                     putInfoOnScreen(db, value);
-                    addNewView(db, value);
+                    if(!value.get("userOwner").equals(getIntent().getExtras().getString("ActualUser")) && !addDone){
+                        addNewView(db, value);
+                        addDone = true;
+                    }
+
                 }else{
                     showError();
                 }
@@ -54,10 +71,35 @@ public class ViewStorie extends AppCompatActivity {
     }
     //Sumar visita cuando el usuario no sea el owner ----> POR HACER <-----------------------------
     private void addNewView(FirebaseFirestore db, DocumentSnapshot value) {
-
+        Double newView = value.getDouble("storieViews") + 1;
+        db.collection("stories").document(value.get("storieId").toString()).update("storieViews", newView);
     }
 
     private void putInfoOnScreen(FirebaseFirestore db, DocumentSnapshot value) {
+        storieOwner = findViewById(R.id.textViewStorieOwner);
+        db.collection("users").document(value.getString("userOwner")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    creator = task.getResult().getString("userName");
+                    storieOwner.setText("➱"+"Creador: "+ creator);
+                    Log.d("GeoStories", "Ha entrado en creator" + creator);
+                }
+            }
+        });
+
+        storieOwner.setTextColor((Color.parseColor("#FF0B4F6C")));
+        storieOwner.setTypeface(null, Typeface.BOLD);
+        storieOwner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), ForeignProfileActivity.class);
+                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                intent.putExtra("UserVisited", value.getString("userOwner"));
+                startActivity(intent);
+            }
+        });
+
         tittle = findViewById(R.id.textViewTittleViewStorie);
         tittle.setText("Título: "+value.getString("storieTittle"));
         tittle.setTypeface(null, Typeface.BOLD);
