@@ -162,6 +162,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 Intent intent = new Intent(context, ViewStorie.class);
                                 intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
                                 intent.putExtra("ActualStorie", m.getTag().toString());
+                                intent.putExtra("ActualLocation", lastKnownLocation);
                                 if(lastKnownLocation.getLatitude() < (m.getPosition().latitude + 0.002) && lastKnownLocation.getLatitude() > (m.getPosition().latitude - 0.002)
                                         && lastKnownLocation.getLongitude() > (m.getPosition().longitude - 0.002) &&
                                         lastKnownLocation.getLongitude() < (m.getPosition().longitude + 0.002)){
