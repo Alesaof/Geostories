@@ -93,7 +93,8 @@
                 android:id="@+id/switchNearStories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=" Historias cercanas" />
+                android:text=" Historias cercanas"
+                android:thumbTint="#34B30A" />
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -112,10 +113,12 @@
             android:id="@+id/homeMapButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/teal_700"
             android:fontFamily="casual"
             android:lineSpacingExtra="0dp"
             android:text="Ir al mapa"
             android:textAlignment="center"
+            android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
             android:translationX="290dp"

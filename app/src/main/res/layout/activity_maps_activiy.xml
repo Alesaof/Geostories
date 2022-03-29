@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     tools:context=".Activities.MapsActivity">
 
     <include
@@ -20,21 +21,38 @@
             android:id="@+id/map"
             class="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="600dp"
-            />
+            android:layout_height="600dp" />
 
-        <Button
-            android:id="@+id/uploadStorieMapActivity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="casual"
-            android:lineSpacingExtra="0dp"
-            android:text="Subir historia"
-            android:textAlignment="center"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:translationX="150dp"
-            android:translationZ="0dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/uploadStorieMapActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#0B4F6C"
+                android:fontFamily="casual"
+                android:foregroundTint="#F5F1F1"
+                android:lineSpacingExtra="0dp"
+                android:text="Subir historia"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:translationX="60dp"
+                android:translationZ="0dp" />
+
+            <Button
+                android:id="@+id/makeRouteMapButton"
+                android:layout_width="133dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#34B30A"
+                android:text="CREAR RUTA"
+                android:textColor="#FFFFFF"
+                android:translationX="60dp" />
+        </LinearLayout>
 
 
     </LinearLayout>

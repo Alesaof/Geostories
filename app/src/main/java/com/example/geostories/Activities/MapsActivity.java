@@ -46,8 +46,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.example.geostories.Activities.Services.InfoWindow;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-
+    //Botones
     private Button uploadStorieButton;
+    private Button makeRouteButton;
+
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastKnownLocation;
 
@@ -127,6 +129,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 intent.putExtra("latitude", "" + lastKnownLocation.getLatitude());
                 intent.putExtra("longitude", "" + lastKnownLocation.getLongitude());
                 intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                startActivity(intent);
+            }
+        });
+
+        makeRouteButton = findViewById(R.id.makeRouteMapButton);
+        makeRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), MakeRouteActivity.class);
+                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                intent.putExtra("ActualLocation", lastKnownLocation);
                 startActivity(intent);
             }
         });

@@ -78,8 +78,6 @@ public class UploadStorieActivity extends AppCompatActivity {
 
         setup();
 
-
-
     }
 
     private void setup() {
