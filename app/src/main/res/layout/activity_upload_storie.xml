@@ -25,7 +25,8 @@
             android:fontFamily="casual"
             android:inputType="textPersonName"
             android:text="Título"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:maxLength="30"/>
 
         <Space
             android:layout_width="match_parent"
@@ -39,7 +40,8 @@
             android:fontFamily="casual"
             android:inputType="textPersonName"
             android:text="Descripción"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:maxLength="255"/>
 
         <Space
             android:layout_width="match_parent"

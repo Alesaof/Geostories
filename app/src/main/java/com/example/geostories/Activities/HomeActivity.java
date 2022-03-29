@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -93,6 +94,7 @@ public class HomeActivity extends AppCompatActivity {
         this.setTitle("Home");
         setContentView(R.layout.activity_home);
         Toolbar myToolbar = findViewById(R.id.toolbar_home);
+        setSupportActionBar(myToolbar);
         //--------Poner imagen desde ruta--------------------------------------------
         /*Activity thisActivity = this;
         profilePic = findViewById(R.id.profileImage);
@@ -112,12 +114,12 @@ public class HomeActivity extends AppCompatActivity {
         });*/
         //----------------------------------------------------------------
 
-        setSupportActionBar(myToolbar);
         Bundle extras = getIntent().getExtras();
         Log.d("Geostories", "A ver si funciona");
         String res = getIntent().getExtras().getString("actualUser");
         Log.d("Geostories","Email del usuario Actual: " + res);
         context = this;
+
 
         if(savedInstanceState!=null){
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -145,6 +147,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+
         firstLinearLayout = findViewById(R.id.firstLinearLayout);
         db.collection("stories").whereEqualTo("userOwner", getIntent().getExtras().getString("actualUser"))
         .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -158,6 +161,7 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     }
                 });
+
         homeMapButton = findViewById(R.id.homeMapButton);
         homeMapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -167,6 +171,7 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
         switchNearStories = findViewById(R.id.switchNearStories);
         switchNearStories.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,9 +179,19 @@ public class HomeActivity extends AppCompatActivity {
                 if(switchNearStories.isChecked()){
                     if(lastKnownLocation != null){
                         firstLinearLayout.removeAllViews();
-                        TextView right = new TextView(context);
-                        right.setText("Ya tiene localizacion" + lastKnownLocation.toString());
-                        firstLinearLayout.addView(right);
+                        db.collection("stories")
+                                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    QuerySnapshot tasked = task.getResult();
+                                    querySnapshot = task.getResult();
+                                    storieSectionInfoNear(task.getResult());
+                                } else {
+                                    Log.d("GeoStories", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
                     }else{
                         firstLinearLayout.removeAllViews();
                         TextView goMap = new TextView(context);
@@ -184,10 +199,59 @@ public class HomeActivity extends AppCompatActivity {
                         firstLinearLayout.addView(goMap);
                     }
                 }else{
-                    storieSectionInfo(querySnapshot);
+                    db.collection("stories").whereEqualTo("userOwner", getIntent().getExtras().getString("actualUser"))
+                            .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                querySnapshot = task.getResult();
+                                storieSectionInfo(task.getResult());
+                            } else {
+                                Log.d("GeoStories", "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
                 }
             }
         });
+    }
+
+    private void storieSectionInfoNear(QuerySnapshot result) {
+        for (QueryDocumentSnapshot document : result) {
+            LinearLayout secondLinearLayout = new LinearLayout(this);
+            secondLinearLayout.setOrientation(0);
+            double storieLatitude = Double.parseDouble(document.get("storieLatitude").toString());
+            double storieLongitude = Double.parseDouble(document.get("storieLongitude").toString());
+            if(lastKnownLocation.getLatitude() < ( storieLatitude + 0.002) &&
+                    lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                    && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                    lastKnownLocation.getLongitude() < (storieLongitude + 0.002)){
+
+                TextView storieTittle = new TextView(this);
+                storieTittle.setText(" ➩" + (String)document.get("storieTittle"));
+                storieTittle.setTextColor((Color.parseColor("#FF0B4F6C")));
+                storieTittle.setTypeface(null, Typeface.BOLD);
+                storieTittle.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(v.getContext(), ViewStorie.class);
+                        intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+                        intent.putExtra("ActualStorie", document.getId());
+                        intent.putExtra("ActualLocation", lastKnownLocation);
+                        startActivity(intent);
+                    }
+                });
+                secondLinearLayout.addView(storieTittle);
+
+                TextView storieDescription = new TextView(this);
+                storieDescription.setText("      " + (String)document.get("storieDescription"));
+                storieDescription.setTypeface(null, Typeface.BOLD);
+                secondLinearLayout.addView(storieDescription);
+                firstLinearLayout.addView(secondLinearLayout);
+
+            }
+
+        }
     }
 
     private void storieSectionInfo(QuerySnapshot result) {
@@ -195,13 +259,6 @@ public class HomeActivity extends AppCompatActivity {
         for (QueryDocumentSnapshot document : result) {
             LinearLayout secondLinearLayout = new LinearLayout(this);
             secondLinearLayout.setOrientation(0);
-
-            /*VideoView video = new VideoView(this);
-            video.setVideoURI(Uri.parse("http://videocdn.bodybuilding.com/video/mp4/62000/62792m.mp4"));
-            video.setMediaController(new MediaController(this));
-            video.requestFocus();
-            video.start();
-            secondLinearLayout.addView(video);*/
 
             TextView storieTittle = new TextView(this);
             storieTittle.setText(" ➩" + (String)document.get("storieTittle"));
@@ -213,6 +270,7 @@ public class HomeActivity extends AppCompatActivity {
                     Intent intent = new Intent(v.getContext(), ViewStorie.class);
                     intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
                     intent.putExtra("ActualStorie", document.getId());
+                    intent.putExtra("ActualLocation", lastKnownLocation);
                     startActivity(intent);
                 }
             });
@@ -243,11 +301,7 @@ public class HomeActivity extends AppCompatActivity {
         Glide.with(this).load(value.get("profilePicUrl")).into(profilePic);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_toolbar, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+
 
     //Ubicacion actual
     private void getLocationPermission() {
@@ -291,6 +345,33 @@ public class HomeActivity extends AppCompatActivity {
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage(), e);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_toolbar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.toolbarProfile:
+                Intent intentProfile = new Intent(this, HomeActivity.class);
+                intentProfile.putExtra("actualUser", getIntent().getExtras().getString("actualUser"));
+                intentProfile.putExtra("ActualLocation", lastKnownLocation);
+                startActivity(intentProfile);
+                return true;
+            case R.id.toolbarMap:
+                Intent intentMap = new Intent(this, MapsActivity.class);
+                intentMap.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+                intentMap.putExtra("ActualLocation", lastKnownLocation);
+                startActivity(intentMap);
+                return true;
+            case R.id.toolbarlogOut:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
 

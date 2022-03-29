@@ -8,9 +8,11 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -39,6 +41,7 @@ public class ForeignProfileActivity extends AppCompatActivity {
     StorageReference storagePath;
 
     //Elementos de pantalla
+    private TextView stories;
     private TextView welcomeText;
     private TextView foreignProfileViewsText;
     private TextView foreignProfileViewsDoneText;
@@ -56,9 +59,8 @@ public class ForeignProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_foreign_profile);
         Toolbar myToolbar = findViewById(R.id.toolbar_foreignProfile);
         setSupportActionBar(myToolbar);
-        this.setTitle("@"+getIntent().getExtras().getString("UserVisited"));
+        //this.setTitle("@"+getIntent().getExtras().getString("UserVisited"));
         setUp();
-
     }
 
     private void setUp() {
@@ -87,34 +89,61 @@ public class ForeignProfileActivity extends AppCompatActivity {
     }
 
     private void storieSectionInfo(QuerySnapshot result) {
-        for (QueryDocumentSnapshot document : result) {
-            LinearLayout secondLinearLayout = new LinearLayout(this);
-            secondLinearLayout.setOrientation(LinearLayout.VERTICAL);
+        foreignProfilefirstLinearLayout.addView(stories);
+        //Normal
+        LinearLayout secondLinearLayout = new LinearLayout(this);
+        secondLinearLayout.setOrientation(LinearLayout.VERTICAL);
+        //Cercanas
+        LinearLayout nearStorieLayout = new LinearLayout(this);
+        nearStorieLayout.setOrientation(LinearLayout.VERTICAL);
 
+        for (QueryDocumentSnapshot document : result) {
             TextView storieTittle = new TextView(this);
             storieTittle.setText(" ➩" + (String)document.get("storieTittle"));
-            storieTittle.setTextColor((Color.parseColor("#FF0B4F6C")));
             storieTittle.setTypeface(null, Typeface.BOLD);
-            /*storieTittle.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), ViewStorie.class);
-                    intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
-                    intent.putExtra("ActualStorie", document.getId());
-                    startActivity(intent);
-                }
-            });*/
-            secondLinearLayout.addView(storieTittle);
 
-            TextView storieDescription = new TextView(this);
-            storieDescription.setText("      " + (String)document.get("storieDescription"));
-            storieDescription.setTypeface(null, Typeface.BOLD);
-            secondLinearLayout.addView(storieDescription);
-            foreignProfilefirstLinearLayout.addView(secondLinearLayout);
+            Location lastKnownLocation =  (Location)getIntent().getExtras().get("ActualLocation");
+            double storieLatitude = Double.parseDouble(document.get("storieLatitude").toString());
+            double storieLongitude = Double.parseDouble(document.get("storieLongitude").toString());
+            if(lastKnownLocation.getLatitude() < ( storieLatitude + 0.002) &&
+                    lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                    && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                    lastKnownLocation.getLongitude() < (storieLongitude + 0.002)) {
+                storieTittle.setTextColor((Color.parseColor("#FF0B4F6C")));
+                storieTittle.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(v.getContext(), ViewStorie.class);
+                        intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+                        intent.putExtra("ActualStorie", document.getId());
+                        intent.putExtra("ActualLocation", lastKnownLocation);
+                        startActivity(intent);
+                    }
+                });
+                nearStorieLayout.addView(storieTittle);
+                TextView storieDescription = new TextView(this);
+                storieDescription.setText("      " + (String)document.get("storieDescription"));
+                storieDescription.setTypeface(null, Typeface.BOLD);
+                nearStorieLayout.addView(storieDescription);
+
+            }else{
+                secondLinearLayout.addView(storieTittle);
+                TextView storieDescription = new TextView(this);
+                storieDescription.setText("      " + (String)document.get("storieDescription"));
+                storieDescription.setTypeface(null, Typeface.BOLD);
+                secondLinearLayout.addView(storieDescription);
+
+            }
         }
+        foreignProfilefirstLinearLayout.addView(nearStorieLayout);
+        foreignProfilefirstLinearLayout.addView(secondLinearLayout);
     }
 
     private void putInfo(FirebaseFirestore db, DocumentSnapshot value) {
+        this.setTitle("@"+value.getString("userName"));
+        stories = new TextView(this);
+        stories.setText("HISTORIAS DE " + value.getString("userName").toUpperCase());
+
         userName = value.getString("userName");
         welcomeText = findViewById(R.id.foreignProfileWelcomeText);
         welcomeText.setText("Bienvenido al perfíl de " + userName);
@@ -135,5 +164,26 @@ public class ForeignProfileActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_toolbar, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.toolbarProfile:
+                Intent intentProfile = new Intent(this, HomeActivity.class);
+                intentProfile.putExtra("actualUser", getIntent().getExtras().getString("ActualUser"));
+                intentProfile.putExtra("ActualLocation", (Location)getIntent().getExtras().get("ActualLocation"));
+                startActivity(intentProfile);
+                return true;
+            case R.id.toolbarMap:
+                Intent intentMap = new Intent(this, MapsActivity.class);
+                intentMap.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                intentMap.putExtra("ActualLocation", (Location)getIntent().getExtras().get("ActualLocation"));
+                startActivity(intentMap);
+                return true;
+            case R.id.toolbarlogOut:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

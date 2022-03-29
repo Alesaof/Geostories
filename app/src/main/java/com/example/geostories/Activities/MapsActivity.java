@@ -16,6 +16,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -301,5 +302,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_toolbar, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.toolbarProfile:
+                Log.d("GeoStories", "...ITEM 1 SELECTED...");
+                Intent intentProfile = new Intent(this,  HomeActivity.class);
+                intentProfile.putExtra("actualUser", getIntent().getExtras().getString("ActualUser"));
+                intentProfile.putExtra("ActualLocation", lastKnownLocation);
+                startActivity(intentProfile);
+                return true;
+            case R.id.toolbarMap:
+                Intent intentMap = new Intent(this, MapsActivity.class);
+                intentMap.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                intentMap.putExtra("ActualLocation", (Location)getIntent().getExtras().get("ActualLocation"));
+                startActivity(intentMap);
+                return true;
+            case R.id.toolbarlogOut:
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

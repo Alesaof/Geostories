@@ -44,7 +44,8 @@
             android:ems="10"
             android:hint="userName"
             android:inputType="textPersonName"
-            android:text="nombre..." />
+            android:text="nombre..."
+            android:maxLength="30"/>
 
         <Space
             android:layout_width="match_parent"
