@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.MakeRouteActivity">
+
+    <!--    Toolbar-->
+    <include
+        android:id="@+id/toolbar_makeRoute"
+        layout="@layout/toolbar_layout"></include>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/selectTextViewMakeRoute"
+            android:layout_width="312dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="casual"
+            android:text="Selecionar historias y orden para la ruta"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:translationX="50dp"
+            android:translationY="90dp" />
+
+        <ListView
+            android:id="@+id/listViewStoriesToRoute"
+            android:layout_width="397dp"
+            android:layout_height="390dp"
+            android:background="@color/teal_700"
+            android:translationX="6dp"
+            android:translationY="110dp" >
+
+        </ListView>
+
+        <Button
+            android:id="@+id/buttonMakeRouteInActivity"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/purple_500"
+            android:fontFamily="casual"
+            android:text="Crear Ruta"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:translationX="140dp"
+            android:translationY="140dp" />
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
