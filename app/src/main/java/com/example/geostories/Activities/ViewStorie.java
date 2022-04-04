@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,9 +27,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.Source;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ViewStorie extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -40,8 +42,14 @@ public class ViewStorie extends AppCompatActivity {
     private TextView description;
     private TextView views;
     private VideoView video;
+    private TextView route1;
+    private TextView route2;
 
     private String creator;
+    private Boolean hasViewed = true;
+    private String storieBefore;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +71,17 @@ public class ViewStorie extends AppCompatActivity {
                         addNewView(db, value);
                         addDone = true;
                     }
-
+                    if(!value.getString("route").equals("")){ //Si la historia se encuentra en una ruta
+                        db.collection("routes").document(value.getString("route")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task2) { //Obtenemos ruta
+                                for(String storiesInRoute :(ArrayList<String>)task2.getResult().get("stories")){ //Lista de historias en ruta
+                                    int posRoute = ((ArrayList<String>) task2.getResult().get("stories")).indexOf(value.getString("storieId"));
+                                    setTittleOnRoute(posRoute, (ArrayList<String>) task2.getResult().get("stories"));
+                                }
+                            }
+                        });
+                    }
                 }else{
                     showError();
                 }
@@ -71,14 +89,41 @@ public class ViewStorie extends AppCompatActivity {
         });
 
     }
-    //Sumar visita cuando el usuario no sea el owner ----> POR HACER <-----------------------------
+    //Sumar visita cuando el usuario no sea el owner
     private void addNewView(FirebaseFirestore db, DocumentSnapshot value) {
         Double newView = value.getDouble("storieViews") + 1;
         db.collection("stories").document(value.get("storieId").toString()).update("storieViews", newView);
+        db.collection("users").document(getIntent().getExtras().getString("ActualUser")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    HashMap<String,Object> updateStoriesViewed = new HashMap<>();
+                    HashMap<String, Object>  storieMap;
+                    ArrayList<String> storiesViewed = new ArrayList<>();
+                    if(task.getResult().get("storiesViewed") != null){
+                        storieMap = (HashMap<String, Object>) task.getResult().get("storiesViewed");
+                        storiesViewed = (ArrayList<String>) storieMap.get("storiesViewed");
+                        if(storiesViewed.indexOf(value.getString("storieId")) == -1){
+                            storiesViewed.add(value.getString("storieId"));
+                            updateStoriesViewed.put("storiesViewed", storiesViewed);
+                            db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("storiesViewed", updateStoriesViewed);
+                        }
+                    }else{
+                        storiesViewed.add(value.getString("storieId"));
+                        updateStoriesViewed.put("storiesViewed", storiesViewed);
+                        db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("storiesViewed", updateStoriesViewed);
+                    }
+                }else{
+                    showError();
+                }
+            }
+        });
     }
 
     private void putInfoOnScreen(FirebaseFirestore db, DocumentSnapshot value) {
         storieOwner = findViewById(R.id.textViewStorieOwner);
+        route1 = findViewById(R.id.textViewRouteStorie1);
+        route2 = findViewById(R.id.textViewRouteStorie2);
         db.collection("users").document(value.getString("userOwner")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -89,6 +134,20 @@ public class ViewStorie extends AppCompatActivity {
                 }
             }
         });
+        db.collection("users").document(getIntent().getExtras().getString("ActualUser")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                //Comprobar si la historia forma parte de una ruta y si el usuario ha visto la anterior.
+                if(task.getResult().get("storiesViewed")!=null){
+                    HashMap<String, Object> storieMap = (HashMap<String, Object>) task.getResult().get("storiesViewed");
+                    proveIfViewed((ArrayList<String>)storieMap.get("storiesViewed"), value.getString("storieId"));
+                }else{
+                    proveIfViewed2(value.getString("storieId"));
+                }
+
+            }
+        });
+
 
         storieOwner.setTextColor((Color.parseColor("#FF0B4F6C")));
         storieOwner.setTypeface(null, Typeface.BOLD);
@@ -123,6 +182,113 @@ public class ViewStorie extends AppCompatActivity {
         mediaController.setAnchorView(video);
         video.setMediaController(mediaController);
         video.start();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // yourMethod();
+                checkVideo(video, mediaController);
+            }
+        }, 5000);
+
+    }
+
+    private void checkVideo(VideoView video, MediaController mediaController) {
+        Log.d("GeoStories","El checkVideo se encuentra en : " + hasViewed.toString());
+        if(!hasViewed){
+            video.stopPlayback();
+            MediaController mediaC = new MediaController(this);
+            mediaC.setEnabled(false);
+            video.setMediaController(mediaC);
+        }
+    }
+
+    //Si el usuario no ha visto nada y actualStorie forma parte de una ruta
+    private void proveIfViewed2(String storieId) {
+        db.collection("stories").document(storieId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.getResult().getString("route")!= null){
+                    db.collection("routes").document(task.getResult().getString("route")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task2) {
+                            if(((ArrayList<String>) task2.getResult().get("stories")).indexOf(storieId) > 0){
+                                hasViewed = false;
+                            }else{
+                                hasViewed = true;
+                            }
+                        }
+                    });
+                }else{
+                    hasViewed = true;
+                }
+            }
+        });
+    }
+    //Si el usuario si ha visto alguna historia y actualStorie forma parte de una historia
+    private void proveIfViewed(ArrayList<String> storiesViewed, String storieId) {
+        db.collection("stories").document(storieId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.getResult().getString("route") != null){
+                    db.collection("routes").document(task.getResult().getString("route")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task2) {
+                            int position = ((ArrayList<String>) task2.getResult().get("stories")).indexOf(storieId);
+                            if(position > 0){
+                                ArrayList<String> storiesInRoute = (ArrayList<String>)task2.getResult().get("stories");
+                                storieBefore = storiesInRoute.get(position-1);
+                                Log.d("GeoStories", "HISTORIA ANTERIOR: " + storieBefore + " Debulucion de if: " + storiesViewed.indexOf(storieBefore) +
+                                        " Historias vistas por usuario: " + storiesViewed.toString());
+                                if(storiesViewed.indexOf(storieBefore) != -1){
+                                    hasViewed = true;
+                                }else{
+                                    Log.d("GeoStories", "Aqui lo pone a falso");
+                                    hasViewed = false;
+                                }
+                            }else{
+                                hasViewed = true;
+                            }
+                        }
+                    });
+                }else{
+                    hasViewed = true;
+                }
+            }
+        });
+    }
+
+    private void setTittleOnRoute(int posRoute, ArrayList<String> storiesInRoute) {
+        if(posRoute == 0){
+            hasViewed = true;
+             db.collection("stories").document(storiesInRoute.get(1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            route1.setText("Siguiente parte de Historia: " + task.getResult().getString("storieTittle"));
+                        }
+                    });
+        }else{
+            if(posRoute == storiesInRoute.size()-1){
+                db.collection("stories").document(storiesInRoute.get(posRoute-1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        route1.setText("Parte anterior de Historia: " + task.getResult().getString("storieTittle"));
+                    }
+                });
+            }else{
+                db.collection("stories").document(storiesInRoute.get(posRoute-1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        route1.setText("Parte anterior de Historia: " + task.getResult().getString("storieTittle"));
+                    }
+                });
+                db.collection("stories").document(storiesInRoute.get(posRoute+1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        route2.setText("Siguiente parte de Historia: " + task.getResult().getString("storieTittle"));
+                    }
+                });
+            }
+        }
     }
 
     private void showError() {

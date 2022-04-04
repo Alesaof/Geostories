@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.example.geostories.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -27,11 +28,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class MakeRouteActivity extends AppCompatActivity {
     //Screen Elements
     private ListView lv;
     private Button makeRouteButton;
+    private ProgressBar progressBar;
 
     //Firebase
     private FirebaseFirestore db;
@@ -53,6 +56,8 @@ public class MakeRouteActivity extends AppCompatActivity {
 
     private void setUp() {
         lv = findViewById(R.id.listViewStoriesToRoute);
+        progressBar = findViewById(R.id.progressBarUploadRoute);
+        progressBar.setVisibility(View.INVISIBLE);
         db = FirebaseFirestore.getInstance();
         Log.d("GeoStories", "Nombre del usuario de crear ruta: " + getIntent().getExtras().getString("ActualUser"));
         //Seteo en el ListView
@@ -104,10 +109,26 @@ public class MakeRouteActivity extends AppCompatActivity {
         makeRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 route = new HashMap<>();
-                route.put("RouteId", "1");
+                UUID routeIdRandom = UUID.randomUUID();
+                String routeId = getIntent().getExtras().getString("ActualUser") + "-r" + routeIdRandom.toString();
+                route.put("RouteId", routeId);
                 route.put("stories", storiesToRoute);
+                route.put("userOwner",  getIntent().getExtras().getString("ActualUser"));
                 Log.d("GeoStories", "Mapa de ruta: " + route.toString());
+                for(String storieId: storiesToRoute){
+                    db.collection("stories").document(storieId).update("route", routeId);
+                }
+
+                db.collection("routes").document(routeId).set(route).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            backMap();
+                        }
+                    }
+                });
             }
         });
 
@@ -116,7 +137,13 @@ public class MakeRouteActivity extends AppCompatActivity {
     private void setStoriesArray(Object[] userStories) {
         ArrayAdapter<Object> storiesToSelectAdapter = new ArrayAdapter<Object>(this, R.layout.list_item_storiestoroute, userStories);
         lv.setAdapter(storiesToSelectAdapter);
+    }
 
+    private void backMap() {
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+        intent.putExtra("ActualLocation", (Location)getIntent().getExtras().get("ActualLocation"));
+        startActivity(intent);
     }
 
     //Toolbar

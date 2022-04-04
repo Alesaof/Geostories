@@ -129,6 +129,7 @@ public class UploadStorieActivity extends AppCompatActivity {
                                     map.put("userOwner", getIntent().getExtras().getString("ActualUser"));
                                     map.put("videoUri", URLVideo); //No se si esto luego se puede utilizar realmente para visualizar.
                                     map.put("storieViews", 0);
+                                    map.put("route", "");
                                     //Comprobar si el id de la historia ya existe
                                     storieId = UUID.randomUUID();
                                     storieIdExists();

@@ -114,7 +114,7 @@ public class ForeignProfileActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(v.getContext(), ViewStorie.class);
-                        intent.putExtra("ActualUser", getIntent().getExtras().getString("actualUser"));
+                        intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
                         intent.putExtra("ActualStorie", document.getId());
                         intent.putExtra("ActualLocation", lastKnownLocation);
                         startActivity(intent);

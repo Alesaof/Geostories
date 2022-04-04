@@ -20,6 +20,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,11 +74,15 @@ public class SignUpActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
                     Map<String, Object> map = new HashMap<>();
+                    HashMap<String, Object> maplista = new HashMap<>();
+                    ArrayList<String> lista = new ArrayList<String>();
+                    maplista.put("storiesViewed", lista);
                     map.put("userName", userName);
                     map.put("userEmail", SignUpActivity.this.userEmail);
                     map.put("userPassword", SignUpActivity.this.userPassword);
                     map.put("profileViews", 0);
                     map.put("viewsDone", 0);
+                    map.put("storiesViewed", maplista);
                     map.put("profilePicUrl", "https://firebasestorage.googleapis.com/v0/b/geostories-9ae6f.appspot.com/o/examples%2Fimages%2Fprofile.jpg.png?alt=media&token=08366982-74f1-497a-a325-bb09050b2931");
                     db.collection("users").document(SignUpActivity.this.userEmail).set(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override

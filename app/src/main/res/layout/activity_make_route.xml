@@ -38,6 +38,17 @@
 
         </ListView>
 
+        <ProgressBar
+            android:id="@+id/progressBarUploadRoute"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:foregroundTint="@color/white"
+            android:progressTint="@color/purple_500"
+            android:translationX="160dp"
+            android:translationY="130dp" />
+
         <Button
             android:id="@+id/buttonMakeRouteInActivity"
             android:layout_width="108dp"
