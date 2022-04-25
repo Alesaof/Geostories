@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -35,6 +36,8 @@ public class MakeRouteActivity extends AppCompatActivity {
     private ListView lv;
     private Button makeRouteButton;
     private ProgressBar progressBar;
+    private Button buttonBackRoute;
+    private View lastSelectedItemView;
 
     //Firebase
     private FirebaseFirestore db;
@@ -90,6 +93,8 @@ public class MakeRouteActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 storiesToRoute.add(document.getString("storieId"));
                                 view.setBackgroundColor(Color.BLUE);
+                                view.setTag(document.getString("storieId"));
+                                lastSelectedItemView = view;
 
                                 /*Resources r = view.getResources();
                                 for(Resources a: r.getR){
@@ -102,6 +107,18 @@ public class MakeRouteActivity extends AppCompatActivity {
                         }
                     }
                 });
+            }
+        });
+
+        buttonBackRoute = findViewById(R.id.buttonBackRoute);
+        buttonBackRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(storiesToRoute.size() >= 1){
+                    lv.findViewWithTag(storiesToRoute.get(storiesToRoute.size()-1)).setBackgroundColor(0xFF0B4F6);
+                    storiesToRoute.remove(storiesToRoute.size()-1);
+                    Log.d("GeoStories", "storiesToRoute back click: " + storiesToRoute.toString());
+                }
             }
         });
 

@@ -162,7 +162,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 lastKnownLocation.getLongitude() < (storieLongitude + 0.002)){
                                     m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         }else{
-                            m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                            if(null != getIntent().getExtras().get("StorieFarderLocation")){
+                                Location storieFarderLocation = (Location)getIntent().getExtras().get("StorieFarderLocation");
+                                if(storieFarderLocation.getLatitude() == storieLatitude && storieFarderLocation.getLongitude() == storieLongitude){
+                                    m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                                }else{
+                                    m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                }
+                            }else{
+                                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                            }
                         }
                         m.setTag(document.getId());
 

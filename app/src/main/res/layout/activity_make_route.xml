@@ -59,8 +59,21 @@
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:translationX="140dp"
+            android:translationX="70dp"
             android:translationY="140dp" />
+
+        <Button
+            android:id="@+id/buttonBackRoute"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/teal_700"
+            android:fontFamily="casual"
+            android:text="Retroceder"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:translationX="190dp"
+            android:translationY="90dp" />
     </LinearLayout>
 
 

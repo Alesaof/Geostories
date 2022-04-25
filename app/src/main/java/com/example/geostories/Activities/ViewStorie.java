@@ -22,6 +22,7 @@ import android.widget.VideoView;
 import com.example.geostories.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -107,11 +108,14 @@ public class ViewStorie extends AppCompatActivity {
                             storiesViewed.add(value.getString("storieId"));
                             updateStoriesViewed.put("storiesViewed", storiesViewed);
                             db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("storiesViewed", updateStoriesViewed);
+                            db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("viewsDone", storiesViewed.size());
                         }
+                        db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("viewsDone", storiesViewed.size());
                     }else{
                         storiesViewed.add(value.getString("storieId"));
                         updateStoriesViewed.put("storiesViewed", storiesViewed);
                         db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("storiesViewed", updateStoriesViewed);
+                        db.collection("users").document(getIntent().getExtras().getString("ActualUser")).update("viewsDone", storiesViewed.size());
                     }
                 }else{
                     showError();
@@ -199,6 +203,7 @@ public class ViewStorie extends AppCompatActivity {
             MediaController mediaC = new MediaController(this);
             mediaC.setEnabled(false);
             video.setMediaController(mediaC);
+            Snackbar.make(ViewStorie.this, findViewById(android.R.id.content),"Debe ver las historias anteriores para continuar la ruta", Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -263,7 +268,8 @@ public class ViewStorie extends AppCompatActivity {
              db.collection("stories").document(storiesInRoute.get(1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            route1.setText("Siguiente parte de Historia: " + task.getResult().getString("storieTittle"));
+                            route1.setText("Siguiente historia en ruta: " + task.getResult().getString("storieTittle"));
+                            setLinkOnRoute(task.getResult(), route1, posRoute, storiesInRoute, "next");
                         }
                     });
         }else{
@@ -271,7 +277,8 @@ public class ViewStorie extends AppCompatActivity {
                 db.collection("stories").document(storiesInRoute.get(posRoute-1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        route1.setText("Parte anterior de Historia: " + task.getResult().getString("storieTittle"));
+                        route1.setText("Historia anterior en ruta: " + task.getResult().getString("storieTittle"));
+                        setLinkOnRoute(task.getResult(), route1, posRoute, storiesInRoute, "back");
                     }
                 });
             }else{
@@ -289,6 +296,96 @@ public class ViewStorie extends AppCompatActivity {
                 });
             }
         }
+    }
+    //La idea es que aqui se añadan los links a las historias en ruta y dependiendo donde se encuentre el usuario haga una cosa u otra y si su situacion en la ruta.
+    private void setLinkOnRoute(DocumentSnapshot result, TextView routeSelected, int posRoute, ArrayList<String> storiesInRoute, String nextorback) {
+        switch (nextorback){
+            case "next":
+                if(hasViewed){
+                    Location lastKnownLocation =  (Location)getIntent().getExtras().get("ActualLocation");
+                    double storieLatitude = Double.parseDouble(result.get("storieLatitude").toString());
+                    double storieLongitude = Double.parseDouble(result.get("storieLongitude").toString());
+                    if(lastKnownLocation.getLatitude() < ( storieLatitude + 0.002) &&
+                            lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                            && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                            lastKnownLocation.getLongitude() < (storieLongitude + 0.002)) {
+                        routeSelected.setTextColor((Color.parseColor("#FF0B4F6C")));
+                        routeSelected.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(v.getContext(), ViewStorie.class);
+                                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                                intent.putExtra("ActualStorie", result.getId());
+                                intent.putExtra("ActualLocation", lastKnownLocation);
+                                startActivity(intent);
+                            }
+                        });
+                    }else{
+                        //Codigo para cuando no se encuentra la siguiente al alcance
+                        routeSelected.setTextColor((Color.parseColor("#34B30A")));
+                        routeSelected.setText("Fuera de alcance -" + routeSelected.getText());
+                        routeSelected.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                openMapWithStorieLocation(result, v);
+                            }
+                        });
+
+                    }
+                }
+            case "back":
+                if(hasViewed){
+                    Location lastKnownLocation =  (Location)getIntent().getExtras().get("ActualLocation");
+                    double storieLatitude = Double.parseDouble(result.get("storieLatitude").toString());
+                    double storieLongitude = Double.parseDouble(result.get("storieLongitude").toString());
+                    if(lastKnownLocation.getLatitude() < ( storieLatitude + 0.002) &&
+                            lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                            && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                            lastKnownLocation.getLongitude() < (storieLongitude + 0.002)) {
+                        routeSelected.setTextColor((Color.parseColor("#FF0B4F6C")));
+                        routeSelected.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(v.getContext(), ViewStorie.class);
+                                intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+                                intent.putExtra("ActualStorie", result.getId());
+                                intent.putExtra("ActualLocation", lastKnownLocation);
+                                startActivity(intent);
+                            }
+                        });
+                    }else{
+                        //Codigo para cuando no se encuentra la siguiente al alcance
+                        routeSelected.setTextColor((Color.parseColor("#34B30A")));
+                        routeSelected.setText("Fuera de alcance -" + routeSelected.getText());
+                        routeSelected.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                openMapWithStorieLocation(result, v);
+                            }
+                        });
+                    }
+
+                }else{
+                    //Codigo para cuando no se le permite ver la historia porque no ha visto la anterior
+
+                }
+        }
+    }
+
+    private void openMapWithStorieLocation(DocumentSnapshot result, View v) {
+        Location lastKnownLocation =  (Location)getIntent().getExtras().get("ActualLocation");
+        Location storieFarderLocation = lastKnownLocation;
+        double storieLatitude = Double.parseDouble(result.get("storieLatitude").toString());
+        double storieLongitude = Double.parseDouble(result.get("storieLongitude").toString());
+        storieFarderLocation.setLatitude(storieLatitude);
+        storieFarderLocation.setLongitude(storieLongitude);
+
+        Intent intent = new Intent(v.getContext(), MapsActivity.class);
+        intent.putExtra("ActualUser", getIntent().getExtras().getString("ActualUser"));
+        intent.putExtra("StorieFarderLocation", storieFarderLocation);
+        intent.putExtra("ActualLocation", lastKnownLocation);
+        startActivity(intent);
+
     }
 
     private void showError() {

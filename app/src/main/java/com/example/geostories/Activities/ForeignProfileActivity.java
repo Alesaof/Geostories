@@ -53,6 +53,8 @@ public class ForeignProfileActivity extends AppCompatActivity {
     private long profileViews;
     private long viewsDone;
 
+    private Boolean profileViewDone = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +73,11 @@ public class ForeignProfileActivity extends AppCompatActivity {
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 if(value.exists()){
                     putInfo(db, value);
+                    if(!profileViewDone){
+                        Long profileViews = (Long) value.get("profileViews") + 1;
+                        db.collection("users").document(value.get("userEmail").toString()).update("profileViews", profileViews);
+                        profileViewDone = true;
+                    }
                 }
             }
         });
