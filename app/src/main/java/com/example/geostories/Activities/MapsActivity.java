@@ -159,15 +159,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .snippet(document.get("storieDescription").toString() + "\nVisitas: " + storieViewsCast));
                         if(lastKnownLocation.getLatitude() < (storieLatitude + 0.002) && lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
                                 && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
-                                lastKnownLocation.getLongitude() < (storieLongitude + 0.002)){
+                                lastKnownLocation.getLongitude() < (storieLongitude + 0.002) && null == getIntent().getExtras().get("StorieFarderLocation")){
                                     m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         }else{
-                            if(null != getIntent().getExtras().get("StorieFarderLocation")){
-                                Location storieFarderLocation = (Location)getIntent().getExtras().get("StorieFarderLocation");
-                                if(storieFarderLocation.getLatitude() == storieLatitude && storieFarderLocation.getLongitude() == storieLongitude){
+                            if(null != getIntent().getExtras().get("StorieFarderLocation")) {
+                                Location storieFarderLocation = (Location) getIntent().getExtras().get("StorieFarderLocation");
+                                if (storieFarderLocation.getLatitude() == storieLatitude && storieFarderLocation.getLongitude() == storieLongitude) {
                                     m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
                                 }else{
-                                    m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                if (lastKnownLocation.getLatitude() < (storieLatitude + 0.002) && lastKnownLocation.getLatitude() > (storieLatitude - 0.002)
+                                        && lastKnownLocation.getLongitude() > (storieLongitude - 0.002) &&
+                                        lastKnownLocation.getLongitude() < (storieLongitude + 0.002)) {
+                                    m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                                } else {
+                                        m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                                    }
                                 }
                             }else{
                                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));

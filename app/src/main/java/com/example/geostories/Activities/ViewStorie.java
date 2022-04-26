@@ -49,6 +49,7 @@ public class ViewStorie extends AppCompatActivity {
     private String creator;
     private Boolean hasViewed = true;
     private String storieBefore;
+    private Boolean greenDone = false;
 
 
 
@@ -286,12 +287,14 @@ public class ViewStorie extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         route1.setText("Parte anterior de Historia: " + task.getResult().getString("storieTittle"));
+                        setLinkOnRoute(task.getResult(), route1, posRoute, storiesInRoute, "back");
                     }
                 });
                 db.collection("stories").document(storiesInRoute.get(posRoute+1)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         route2.setText("Siguiente parte de Historia: " + task.getResult().getString("storieTittle"));
+                        setLinkOnRoute(task.getResult(), route1, posRoute, storiesInRoute, "next");
                     }
                 });
             }
@@ -354,7 +357,7 @@ public class ViewStorie extends AppCompatActivity {
                             }
                         });
                     }else{
-                        //Codigo para cuando no se encuentra la siguiente al alcance
+                        //Codigo para cuando no se encuentra la anterior al alcance
                         routeSelected.setTextColor((Color.parseColor("#34B30A")));
                         routeSelected.setText("Fuera de alcance -" + routeSelected.getText());
                         routeSelected.setOnClickListener(new View.OnClickListener() {
@@ -367,7 +370,36 @@ public class ViewStorie extends AppCompatActivity {
 
                 }else{
                     //Codigo para cuando no se le permite ver la historia porque no ha visto la anterior
-
+                    db.collection("users").document(getIntent().getExtras().getString("ActualUser")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if(task.isSuccessful()){
+                                Map<String, Object> storiesViewedActualUserMap = (Map<String, Object>) task.getResult().get("storiesViewed");
+                                ArrayList<String> storiesViewedActualUser = (ArrayList<String>) storiesViewedActualUserMap.get("storiesViewed");
+                                for(String storieOnRoute: storiesInRoute){
+                                    if(storiesViewedActualUser.indexOf(storieOnRoute) == -1){
+                                        routeSelected.setTextColor((Color.parseColor("#34B30A")));
+                                        if(!greenDone){
+                                            greenDone = true;
+                                            Log.d("GeoStories", "HISTORIA EN EL BUCLE: " + storieOnRoute);
+                                            db.collection("stories").document(storieOnRoute).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                    routeSelected.setText("Historia que deberia ver para continuar - " + task.getResult().getString("storieTittle"));
+                                                    routeSelected.setOnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
+                                                            openMapWithStorieLocation(task.getResult(), v);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
         }
     }
@@ -385,7 +417,6 @@ public class ViewStorie extends AppCompatActivity {
         intent.putExtra("StorieFarderLocation", storieFarderLocation);
         intent.putExtra("ActualLocation", lastKnownLocation);
         startActivity(intent);
-
     }
 
     private void showError() {
