@@ -122,6 +122,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
         if(savedInstanceState!=null){
+            Log.d("GeoStories", "HomeActivity LOCATION");
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         }
 
@@ -335,6 +336,7 @@ public class HomeActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
                             lastKnownLocation = task.getResult();
+                            Log.d("GeoStories", "HomeActivity location" + lastKnownLocation);
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());

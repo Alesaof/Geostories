@@ -44,7 +44,7 @@
             android:clickable="true"
             android:elevation="30dp"
             android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_menu_search" />
+            android:src="@android:drawable/ic_search_category_default" />
     </LinearLayout>
 
 

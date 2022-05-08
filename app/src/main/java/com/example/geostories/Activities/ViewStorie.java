@@ -235,7 +235,7 @@ public class ViewStorie extends AppCompatActivity {
         db.collection("stories").document(storieId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.getResult().getString("route") != null){
+                if(task.getResult().getString("route") != null && task.getResult().getString("route") != ""){
                     db.collection("routes").document(task.getResult().getString("route")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task2) {
@@ -294,7 +294,7 @@ public class ViewStorie extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         route2.setText("Siguiente parte de Historia: " + task.getResult().getString("storieTittle"));
-                        setLinkOnRoute(task.getResult(), route1, posRoute, storiesInRoute, "next");
+                        setLinkOnRoute(task.getResult(), route2, posRoute, storiesInRoute, "next");
                     }
                 });
             }
